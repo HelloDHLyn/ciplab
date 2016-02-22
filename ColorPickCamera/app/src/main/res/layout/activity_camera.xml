@@ -4,49 +4,62 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:keepScreenOn="true"
+    android:id="@+id/activity_container"
     >
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:id="@+id/color_preview">
 
-        <FrameLayout
-            android:id="@+id/camera_preview"
-            android:layout_alignParentTop="true"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-
-            />
-
-        <SurfaceView
-            android:id="@+id/overlay_preview"
-            android:layout_alignParentTop="true"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            />
     </RelativeLayout>
 
-    <LinearLayout
-        android:layout_width="400px"
+    <RelativeLayout
+        android:layout_width="1000px"
         android:layout_height="match_parent"
         android:orientation="vertical" >
 
         <Button
             android:id="@+id/btn_focus"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             android:text="초점" />
 
         <Button
             android:id="@+id/btn_shot"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/btn_focus"
             android:text="촬영" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/text_progress"
-            android:text="준비중"/>
-    </LinearLayout>
+            android:layout_below="@id/btn_shot"
+            android:text="준비중\n"/>
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="562px"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/preview_container">
+
+            <FrameLayout
+                android:id="@+id/camera_preview"
+                android:layout_alignParentTop="true"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <SurfaceView
+                android:id="@+id/overlay_preview"
+                android:layout_alignParentTop="true"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
 </LinearLayout>

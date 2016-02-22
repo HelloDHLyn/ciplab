@@ -8,7 +8,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,6 +20,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +40,7 @@ public class CameraActivity extends Activity {
 
     private Camera mCamera;
     private CameraPreview mPreview;
+    private static View colorPreview;
     private static FrameLayout preview;
     private static SurfaceView overlayView;
     private static SurfaceHolder holderTransparent;
@@ -50,9 +53,6 @@ public class CameraActivity extends Activity {
     private static long start_time = -1;
     private static int shots_number = -1;
     private static int taken_number = 0;
-
-    private static int width;
-    private static int height;
 
     private static TextView progressText;
 
@@ -98,6 +98,9 @@ public class CameraActivity extends Activity {
             e.printStackTrace();
         }
 
+        // Set color preview
+        colorPreview = (RelativeLayout) findViewById(R.id.color_preview);
+
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
@@ -106,19 +109,9 @@ public class CameraActivity extends Activity {
         preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
-//        Box box = new Box(this);
-//        addContentView(box, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
-
-//        holderTransparent = overlayView.getHolder();
-//        holderTransparent.setFormat(PixelFormat.TRANSPARENT);
-//        holderTransparent.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-//
-        Camera.Parameters param = mCamera.getParameters();
-        List<Camera.Size> sizeList = param.getSupportedPreviewSizes();
-        width = sizeList.get(0).width;
-        height = sizeList.get(0).height;
-//
-//        DrawFocusRect(width-50, height-50 , width+50 , height+50);
+        // Draw preview rectangle
+        Box box = new Box(this, (LinearLayout) findViewById(R.id.activity_container), (SurfaceView) findViewById(R.id.overlay_preview));
+        addContentView(box, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
 
         Button button_focus = (Button) findViewById(R.id.btn_focus);
         button_focus.setOnClickListener(new View.OnClickListener() {
@@ -147,20 +140,6 @@ public class CameraActivity extends Activity {
         }
         if(started) handler.removeCallbacks(runnable);
         super.onDestroy();
-    }
-
-    private void DrawFocusRect(float RectLeft, float RectTop, float RectRight, float RectBottom) {
-        Canvas canvas = holderTransparent.lockCanvas();
-
-        canvas.drawColor(0, PorterDuff.Mode.CLEAR);
-        //border's properties
-        Paint paint = new Paint();
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setColor(Color.rgb(255,0,0));
-        paint.setStrokeWidth(3);
-        canvas.drawRect(RectLeft, RectTop, RectRight, RectBottom, paint);
-
-        holderTransparent.unlockCanvasAndPost(canvas);
     }
 
     private Runnable runnable = new Runnable() {
@@ -274,20 +253,28 @@ public class CameraActivity extends Activity {
                             blueColors += Color.blue(c);
                         }
                     }
+
                     // calculate average of bitmap r,g,b values
-                    float red = (float)redColors / (float)pixelCount;
-                    float green = (float)greenColors / (float)pixelCount;
-                    float blue = (float)blueColors / (float)pixelCount;
+                    final float red = (float)redColors / (float)pixelCount;
+                    final float green = (float)greenColors / (float)pixelCount;
+                    final float blue = (float)blueColors / (float)pixelCount;
 
                     try {
                         csvWriter.append(time + "," + red + "," + green + "," + blue);
                         csvWriter.append('\n');
 
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                colorPreview.setBackgroundColor(Color.argb(255, (int) red, (int) green, (int) blue));
+                                Log.i("ColorPickCamera", red + ", " + green + ", " + blue);
+                                colorPreview.invalidate();
+                            }
+                        });
+
                         if (taken_number % 200 == 0) {
                             csvWriter.flush();
                         }
-
-//                        pictureFile.delete();
                     } catch (FileNotFoundException e) {
                         Log.e("ColorPickCamera", "File not found: " + e.getMessage());
                     } catch (IOException e) {
@@ -299,7 +286,7 @@ public class CameraActivity extends Activity {
             thread.start();
 
             taken_number++;
-            progressText.setText(taken_number + " / " + shots_number);
+            progressText.setText(taken_number + " / " + shots_number + "\n");
 
             if (taken_number == shots_number) {
                 try {
@@ -324,8 +311,13 @@ public class CameraActivity extends Activity {
 
 class Box extends View {
     private Paint paint = new Paint();
-    Box(Context context) {
+    private LinearLayout container;
+    private SurfaceView overlay;
+
+    Box(Context context, LinearLayout container, SurfaceView overlay) {
         super(context);
+        this.container = container;
+        this.overlay = overlay;
     }
 
     @Override
@@ -337,10 +329,13 @@ class Box extends View {
         paint.setStrokeWidth(3);
 
         //center
-        int x0 = (canvas.getWidth()-400)/2;
-        int y0 = canvas.getHeight()/2;
-        int dx = 250;
-        int dy = 250;
+        int x0 = container.getWidth() - (int) (overlay.getX() + overlay.getWidth() / 2);
+        int y0 = container.getHeight() - (int) (overlay.getY() + overlay.getHeight() / 2);
+        int dx = 50;
+        int dy = 50;
+
+        Log.i("ColorPickCamera", x0 + ", " + y0);
+
         //draw guide box
         canvas.drawRect(x0-dx, y0-dy, x0+dx, y0+dy, paint);
     }
