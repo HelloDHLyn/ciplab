@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
+            android:hint="5"
             android:id="@+id/edit_freq"/>
 
     </LinearLayout>
@@ -36,9 +37,39 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
+            android:hint="10"
             android:id="@+id/edit_shot_num"/>
 
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="RGB 파일명" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="RGBImage"
+            android:id="@+id/edit_file_name"/>
+
+    </LinearLayout>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="사진 파일로 저장하기"
+        android:id="@+id/check_save_file" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="* 새로 촬영을 시작하면 기존의 데이터 파일은 지워집니다."/>
 
     <Button
         android:layout_width="match_parent"

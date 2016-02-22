@@ -5,11 +5,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -29,9 +31,15 @@ public class MainActivity extends ActionBarActivity {
                 if (checkCameraHardware(MainActivity.this)) {
                     EditText frequency = (EditText) findViewById(R.id.edit_freq);
                     EditText shotNumber = (EditText) findViewById(R.id.edit_shot_num);
+                    EditText fileName = (EditText) findViewById(R.id.edit_file_name);
+                    CheckBox savePhoto = (CheckBox) findViewById(R.id.check_save_file);
+
                     Bundle bundle = new Bundle();
-                    bundle.putInt("Frequency", Integer.parseInt(frequency.getText().toString()));
-                    bundle.putInt("ShotNumber", Integer.parseInt(shotNumber.getText().toString()));
+                    bundle.putInt("Frequency", Integer.parseInt(setValueOrDefault(frequency, "5")));
+                    bundle.putInt("ShotNumber", Integer.parseInt(setValueOrDefault(shotNumber, "10")));
+                    bundle.putString("Filename", setValueOrDefault(fileName, "RGBImage"));
+                    if (savePhoto.isChecked()) bundle.putInt("Save", 1);
+                    else bundle.putInt("Save", 0);
 
                     Intent intent = new Intent(MainActivity.this, CameraActivity.class);
                     intent.putExtras(bundle);
@@ -77,5 +85,11 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private String setValueOrDefault(EditText edit, String def) {
+        Editable e = edit.getText();
+        if (e.length() == 0) return def;
+        return e.toString();
     }
 }

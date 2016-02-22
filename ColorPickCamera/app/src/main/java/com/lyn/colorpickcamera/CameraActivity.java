@@ -43,6 +43,8 @@ public class CameraActivity extends Activity {
     private static SurfaceHolder holderTransparent;
 
     private static Boolean started = false;
+    private static Boolean save = false;
+    private static String fileName = "RGBImage";
     private Handler handler = new Handler();
     private static int interval = -1;
     private static long start_time = -1;
@@ -64,6 +66,19 @@ public class CameraActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
+        // Get parameter values
+        Intent myIntent = getIntent();
+        interval = myIntent.getIntExtra("Frequency", 3);
+        shots_number = myIntent.getIntExtra("ShotNumber", 0);
+        if (myIntent.getIntExtra("Save", 0) == 1) save = true;
+        else save = false;
+        shots_number = myIntent.getIntExtra("ShotNumber", 0);
+        fileName = myIntent.getStringExtra("Filename");
+
+        progressText = (TextView) findViewById(R.id.text_progress);
+        overlayView = (SurfaceView)findViewById(R.id.overlay_preview);
+
+        // Set file IO
         path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/ciplab";
 
         filePath = new File(path);
@@ -74,7 +89,7 @@ public class CameraActivity extends Activity {
             }
         }
 
-        csvFile = path + "/RGBImage.csv";
+        csvFile = path + "/" + fileName + ".csv";
         try {
             csvWriter= new FileWriter(csvFile);
             csvWriter.append("timestamp,R,G,B");
@@ -82,14 +97,6 @@ public class CameraActivity extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        // Get parameter values
-        Intent myIntent = getIntent();
-        interval = myIntent.getIntExtra("Frequency", 3);
-        shots_number = myIntent.getIntExtra("ShotNumber", 0);
-
-        progressText = (TextView) findViewById(R.id.text_progress);
-        overlayView = (SurfaceView)findViewById(R.id.overlay_preview);
 
         // Create an instance of Camera
         mCamera = getCameraInstance();
@@ -228,22 +235,24 @@ public class CameraActivity extends Activity {
                             calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
                     String fileName = time + ".jpg";
 
-//                    File pictureFile = new File(path + "/" + fileName);
-//                    if (pictureFile == null) {
-//                        Log.e("ColorPickCamera", "Error creating media file, check storage permissions");
-//                        return;
-//                    }
-//
-//                    try {
-//                        FileOutputStream fos = new FileOutputStream(pictureFile);
-//                        fos.write(imagedata);
-//                        fos.flush();
-//                        fos.close();
-//                    } catch (FileNotFoundException e) {
-//                        Log.e("ColorPickCamera", "File not found: " + e.getMessage());
-//                    } catch (IOException e) {
-//                        Log.e("ColorPickCamera", "Error accessing file: " + e.getMessage());
-//                    }
+                    if (save) {
+                        File pictureFile = new File(path + "/" + fileName);
+                        if (pictureFile == null) {
+                            Log.e("ColorPickCamera", "Error creating media file, check storage permissions");
+                            return;
+                        }
+
+                        try {
+                            FileOutputStream fos = new FileOutputStream(pictureFile);
+                            fos.write(imagedata);
+                            fos.flush();
+                            fos.close();
+                        } catch (FileNotFoundException e) {
+                            Log.e("ColorPickCamera", "File not found: " + e.getMessage());
+                        } catch (IOException e) {
+                            Log.e("ColorPickCamera", "Error accessing file: " + e.getMessage());
+                        }
+                    }
 
                     Bitmap bitmap = BitmapFactory.decodeByteArray(imagedata, 0, imagedata.length);
 
@@ -251,7 +260,7 @@ public class CameraActivity extends Activity {
                     int greenColors = 0;
                     int blueColors = 0;
                     int pixelCount = 0;
-                    int size = 100;
+                    int size = 250;
 
                     int width = 5312;
                     int height = 2988;
